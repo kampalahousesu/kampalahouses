@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Contact Us - Kampala Houses</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background: #0291858c;
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #41b7e2a7 0%, #d05508b7 100%);
+            margin: 0;
+            padding: 0;
+        }
+        .dialog-box {
+            background: #e49898;
+            max-width: 500px;
+            margin: 40px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+            padding: 32px 28px;
+        }
+        .dialog-box h2 {
+            margin-top: 0;
+            color: #2d3e50;
+            text-align: center;
+        }
+        .contact-info, .property-info {
+            margin-bottom: 18px;
+        }
+        .contact-info p, .property-info p {
+            margin: 6px 0;
+            color: #444;
+        }
+        form label {
+            display: block;
+            margin-bottom: 6px;
+            color: #2d3e50;
+        }
+        form input, form textarea, form select {
+            width: 100%;
+            padding: 8px 10px;
+            margin-bottom: 14px;
+            border: 1px solid #cfd8dc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        form textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        .get-started-btn {
+            background: #1e88e5;
+            color: #fff;
+            border: none;
+            padding: 12px 0;
+            width: 100%;
+            border-radius: 4px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .get-started-btn:hover {
+            background: #1565c0;
+        }
+        .footer-note {
+            text-align: center;
+            margin-top: 18px;
+            color: #888;
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <div class="dialog-box">
+        <h2>Contact Kampala Houses</h2>
+        <div class="contact-info">
+            <p><strong>Email:</strong> kampalahouses@gmail.com</p>
+            <p><strong>Phone:</strong> +256706707141  +256780135044</p>
+            <p><strong>Address:</strong> G&H PLAZA SHOP E21 KISAASI</p>
+        </div>
+        <div class="property-info">
+            <label for="property">Property Selected</label>
+            <select id="property" name="property">
+                <option value="">-- Select Property --</option>
+                <option value="house1">3 Bedroom Apartment - Kololo</option>
+                <option value="house2">2 Bedroom Bungalow - Ntinda</option>
+                <option value="house3">Luxury Villa - Munyonyo</option>
+                <option selected>Property Type</option>
+                                    <option value="apartment">Apartment</option>
+                                    <option value="villa">Villa</option>
+                                    <option value="home">Home</option>
+                                    <option value="office">Office</option>
+                                    <option value="building">Building</option>
+                                    <option value="townhouse">Townhouse</option>
+                                    <option value="shop">Shop</option>
+                                    <option value="estate">Estate Properties</option>
+                                    <option value="commercial_land">Commercial Land</option>
+                                    <option value="rental">Rental</option>
+                                    <option value="plot">Plot</option>
+                                    <option value="bungalow">Bungalow</option>
+                                    <option value="duplex">Duplex</option>
+                                    <option value="hostel">Hostel</option>
+                                    <option value="warehouse">Warehouse</option>
+                                    <option value="others">Others</option>
+            </select>
+        </div>
+        <form>
+            <label for="name">Your Name</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="email">Your Email</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="phone">Your Phone</label>
+            <input type="tel" id="phone" name="phone">
+
+            <label for="message">Message / Inquiry</label>
+            <textarea id="message" name="message" placeholder="Tell us more about your interest or questions..." required></textarea>
+
+            <button type="button" class="get-started-btn" onclick="sendToWhatsAppAndSend()">Get Started with Kampala Houses</button>
+            <script>
+                function sendToWhatsAppAndSend() {
+                    var name = document.getElementById('name').value;
+                    var email = document.getElementById('email').value;
+                    var phone = document.getElementById('phone').value;
+                    var property = document.getElementById('property').value;
+                    var message = document.getElementById('message').value;
+
+                    var whatsappNumber = "256706707141";
+                    var text = 
+                        "Contact Inquiry:%0A" +
+                        "Name: " + encodeURIComponent(name) + "%0A" +
+                        "Email: " + encodeURIComponent(email) + "%0A" +
+                        "Phone: " + encodeURIComponent(phone) + "%0A" +
+                        "Property: " + encodeURIComponent(property) + "%0A" +
+                        "Message: " + encodeURIComponent(message);
+
+                    window.open("https://wa.me/" + whatsappNumber + "?text=" + text + "&send=1", "_blank");
+                }
+            </script>
+            <script>
+                function sendToWhatsApp() {
+                    var name = document.getElementById('name').value;
+                    var email = document.getElementById('email').value;
+                    var phone = document.getElementById('phone').value;
+                    var property = document.getElementById('property').value;
+                    var message = document.getElementById('message').value;
+
+                    var whatsappNumber = "256706707141";
+                    var text = 
+                        "Contact Inquiry:%0A" +
+                        "Name: " + encodeURIComponent(name) + "%0A" +
+                        "Email: " + encodeURIComponent(email) + "%0A" +
+                        "Phone: " + encodeURIComponent(phone) + "%0A" +
+                        "Property: " + encodeURIComponent(property) + "%0A" +
+                        "Message: " + encodeURIComponent(message);
+
+                    window.open("https://wa.me/" + whatsappNumber + "?text=" + text, "_blank");
+                }
+            </script>
+        </form>
+        <div class="footer-note">
+            We value your privacy. Your information is safe with us.
+        </div>
+    </div>
+</body>
+</html></div>
