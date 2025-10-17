@@ -150,56 +150,12 @@
                                 <div class="modal-footer">
                                     <button type="submit" class="btn btn-primary" id="submitPropertyBtn">Submit Property</button>
                                     <script>
+                                    // Modal form handler: delegate persistence to window.KHProperties
                                     document.addEventListener('DOMContentLoaded', function() {
-                                        const STORAGE_KEY = 'kh_properties';
                                         const form = document.querySelector('#addPropertyModal form');
-                                        const tab1Row = document.querySelector('#tab-1 .row.g-4');
 
-                                        function loadProperties() {
-                                            try {
-                                                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-                                            } catch (e) {
-                                                console.error('Failed to parse properties from localStorage', e);
-                                                return [];
-                                            }
-                                        }
+                                        if (!form) return;
 
-                                        function saveProperties(props) {
-                                            localStorage.setItem(STORAGE_KEY, JSON.stringify(props));
-                                        }
-
-                                        function propertyHTML(p) {
-                                            return `
-                                                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s" data-id="${p.id}">
-                                                    <div class="property-item rounded overflow-hidden">
-                                                        <div class="position-relative overflow-hidden">
-                                                            <a href="#"><img class="img-fluid" src="${p.image}" alt=""></a>
-                                                            <div class="bg-primary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3">${p.type}</div>
-                                                            <div class="bg-white rounded-top text-primary position-absolute start-0 bottom-0 mx-4 pt-1 px-3">${p.type}</div>
-                                                        </div>
-                                                        <div class="p-4 pb-0">
-                                                            <h5 class="text-primary mb-3">${p.price}</h5>
-                                                            <a class="d-block h5 mb-2" href="#">${p.title}</a>
-                                                            <p><i class="fa fa-map-marker-alt text-primary me-2"></i>${p.location}</p>
-                                                            <p>${p.description}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            `;
-                                        }
-
-                                        function renderStoredProperties() {
-                                            const props = loadProperties();
-                                            // Insert stored properties at top (so newest show first)
-                                            for (let i = props.length - 1; i >= 0; i--) {
-                                                tab1Row.insertAdjacentHTML('afterbegin', propertyHTML(props[i]));
-                                            }
-                                        }
-
-                                        // Initial render from localStorage
-                                        renderStoredProperties();
-
-                                        // Handle form submit
                                         form.addEventListener('submit', function(e) {
                                             e.preventDefault();
 
@@ -211,11 +167,10 @@
                                             const description = document.getElementById('propertyDescription').value.trim();
 
                                             if (!title || !type || !location || !price || !description) {
-                                                // basic validation; inputs are required in markup anyway
-                                                return;
+                                                return; // inputs are required in markup already
                                             }
 
-                                            const createAndSave = (imageUrl) => {
+                                            const createAndAdd = (imageUrl) => {
                                                 const newProp = {
                                                     id: Date.now(),
                                                     image: imageUrl,
@@ -223,15 +178,43 @@
                                                     type,
                                                     location,
                                                     price,
-                                                    description
+                                                    description,
+                                                    status: 'For Sale'
                                                 };
 
-                                                const props = loadProperties();
-                                                props.push(newProp);
-                                                saveProperties(props);
-
-                                                // render immediately
-                                                tab1Row.insertAdjacentHTML('afterbegin', propertyHTML(newProp));
+                                                // Use consolidated API exposed at bottom of page
+                                                if (window.KHProperties && typeof window.KHProperties.add === 'function') {
+                                                    window.KHProperties.add(newProp);
+                                                } else {
+                                                    // Fallback: write directly to localStorage if API not available
+                                                    try {
+                                                        const key = 'kh_properties';
+                                                        const raw = localStorage.getItem(key);
+                                                        const arr = raw ? JSON.parse(raw) : [];
+                                                        arr.push(newProp);
+                                                        localStorage.setItem(key, JSON.stringify(arr));
+                                                        // insert into DOM if possible
+                                                        const tab1Row = document.querySelector('#tab-1 .row.g-4');
+                                                        if (tab1Row) tab1Row.insertAdjacentHTML('afterbegin', `
+                                                            <div class="col-lg-4 col-md-6 wow fadeInUp" data-id="${newProp.id}">
+                                                                <div class="property-item rounded overflow-hidden">
+                                                                    <div class="position-relative overflow-hidden">
+                                                                        <a href="#"><img class="img-fluid" src="${newProp.image}" alt=""></a>
+                                                                        <div class="bg-primary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3">${newProp.status}</div>
+                                                                        <div class="bg-white rounded-top text-primary position-absolute start-0 bottom-0 mx-4 pt-1 px-3">${newProp.type}</div>
+                                                                    </div>
+                                                                    <div class="p-4 pb-0">
+                                                                        <h5 class="text-primary mb-3">${newProp.price}</h5>
+                                                                        <a class="d-block h5 mb-2" href="#">${newProp.title}</a>
+                                                                        <p><i class="fa fa-map-marker-alt text-primary me-2"></i>${newProp.location}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        `);
+                                                    } catch (err) {
+                                                        console.error('Failed fallback save', err);
+                                                    }
+                                                }
 
                                                 // close modal
                                                 const modalEl = document.getElementById('addPropertyModal');
@@ -244,12 +227,11 @@
                                             if (imageInput.files && imageInput.files[0]) {
                                                 const reader = new FileReader();
                                                 reader.onload = function(event) {
-                                                    createAndSave(event.target.result);
+                                                    createAndAdd(event.target.result);
                                                 };
                                                 reader.readAsDataURL(imageInput.files[0]);
                                             } else {
-                                                // No image chosen — use a placeholder or empty string
-                                                createAndSave('img/property-placeholder.png');
+                                                createAndAdd('img/property-1.png');
                                             }
                                         });
                                     });
@@ -829,7 +811,7 @@
                                     <h1 class="mb-3">Contact With Our Certified Agent</h1>
                                     <p>Let’s turn ideas into action—start the conversation.</p>
                                 </div>
-                                <a href="" class="btn btn-primary py-3 px-4 me-2"><i class="fa fa-phone-alt me-2"></i>Make A Call</a>
+                                <a href="tel:+256706707141" class="btn btn-primary py-3 px-4 me-2"><i class="fa fa-phone-alt me-2"></i>Make A Call</a>
                                 <a href="tel:+256706707141" class="btn btn-primary py-3 px-4 me-2"><i class="fa fa-phone-alt me-2"></i>Make A Call</a>
                             </div>
                         </div>
@@ -944,44 +926,88 @@
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
 
-    <!-- Plain HTML/JS example -->
-<form id="addForm">
-  <input id="name" placeholder="Property name" />
-  <button type="submit">Add</button>
-</form>
-<ul id="list"></ul>
+        <!-- Consolidated property storage and rendering script -->
+        <script>
+        (function(){
+            const STORAGE_KEY = 'kh_properties'; // keep existing key used by modal code
 
-<script>
-const STORAGE_KEY = 'my_properties';
-const listEl = document.getElementById('list');
+            // Find the container where tab-1 properties live
+            const tab1Row = document.querySelector('#tab-1 .row.g-4');
 
-function load() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  return saved ? JSON.parse(saved) : [];
-}
+            function safeParse(raw) {
+                try { return JSON.parse(raw); } catch (e) { return null; }
+            }
 
-function save(props) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(props));
-}
+            function loadProperties() {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                const parsed = safeParse(raw);
+                return Array.isArray(parsed) ? parsed : [];
+            }
 
-function render() {
-  const props = load();
-  listEl.innerHTML = props.map(p => `<li>${p.title}</li>`).join('');
-}
+            function saveProperties(props) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(props));
+            }
 
-document.getElementById('addForm').addEventListener('submit', e => {
-  e.preventDefault();
-  const name = document.getElementById('name').value.trim();
-  if (!name) return;
-  const props = load();
-  props.push({ id: Date.now(), title: name });
-  save(props);
-  render();
-  document.getElementById('name').value = '';
-});
+            function propertyHTML(p) {
+                // use a small, non-intrusive HTML fragment that matches site's cards
+                const img = p.image || 'img/property-1.png';
+                const typeLabel = (p.type || 'Property').replace(/_/g, ' ');
+                return `
+                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s" data-id="${p.id}">
+                            <div class="property-item rounded overflow-hidden">
+                                    <div class="position-relative overflow-hidden">
+                                            <a href="#"><img class="img-fluid" src="${img}" alt=""></a>
+                                            <div class="bg-primary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3">${p.status||'For Sale'}</div>
+                                            <div class="bg-white rounded-top text-primary position-absolute start-0 bottom-0 mx-4 pt-1 px-3">${typeLabel}</div>
+                                    </div>
+                                    <div class="p-4 pb-0">
+                                            <h5 class="text-primary mb-3">${p.price||''}</h5>
+                                            <a class="d-block h5 mb-2" href="#">${p.title||''}</a>
+                                            <p><i class="fa fa-map-marker-alt text-primary me-2"></i>${p.location||''}</p>
+                                            <p>${p.description||''}</p>
+                                    </div>
+                            </div>
+                    </div>
+                `;
+            }
 
-render();
-</script>
+            function renderStoredProperties() {
+                if (!tab1Row) return;
+                const props = loadProperties();
+                // clear previously injected stored properties to avoid duplicates
+                // We'll remove items with data-id attributes matching stored ones, then add from storage
+                const existingIds = new Set(props.map(p => String(p.id)));
+                tab1Row.querySelectorAll('[data-id]').forEach(el => {
+                    const id = el.getAttribute('data-id');
+                    if (existingIds.has(id)) el.remove();
+                });
+
+                // Insert stored properties so newest appear first
+                for (let i = props.length - 1; i >= 0; i--) {
+                    tab1Row.insertAdjacentHTML('afterbegin', propertyHTML(props[i]));
+                }
+            }
+
+            // Expose helper for modal script to call when adding
+            window.KHProperties = {
+                load: loadProperties,
+                save: saveProperties,
+                render: renderStoredProperties,
+                add: function(prop) {
+                    const props = loadProperties();
+                    props.push(prop);
+                    saveProperties(props);
+                    // render only the new one at top
+                    if (tab1Row) tab1Row.insertAdjacentHTML('afterbegin', propertyHTML(prop));
+                }
+            };
+
+            // Initial render
+            document.addEventListener('DOMContentLoaded', function(){
+                renderStoredProperties();
+            });
+        })();
+        </script>
 </body>
 
 
