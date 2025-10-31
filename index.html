@@ -3,43 +3,13 @@
 
 <head>
     <meta charset="utf-8">
-    <title>kampala House</title>
+    <title>Kampala houses uganda</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="" name="keywords">
-    <meta content="" name="description">
+    <meta content="Kampala houses houses for Rent" name="keywords">
+    <meta content="We have houses for rent and plots at Kampala houses" name="description">
 
     <!-- Favicon -->
-        <!-- Favicon -->
-        <!-- Keep the .ico for old browsers, and add PNG/apple-touch versions used by modern browsers and social cards -->
-        <link rel="icon" type="image/x-icon" href="img/favicon.ico">
-        <link rel="icon" type="image/png" sizes="32x32" href="img/icon-deal.png">
-        <link rel="icon" type="image/png" sizes="192x192" href="img/icon-deal.png">
-        <link rel="apple-touch-icon" href="img/icon-deal.png">
-        <meta name="msapplication-TileImage" content="img/icon-deal.png">
-
-        <!-- Open Graph / Social image (used by Facebook, LinkedIn, etc.) -->
-        <meta property="og:title" content="Kampala Houses">
-        <meta property="og:description" content="Find a perfect home to live with your family — Kampala Houses connects you with prime properties across Kampala and beyond.">
-        <meta property="og:image" content="/img/icon-deal.png">
-        <meta property="og:type" content="website">
-        <meta property="og:url" content="https://yourdomain.com/">
-
-        <!-- Twitter card -->
-        <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:title" content="Kampala Houses">
-        <meta name="twitter:description" content="Find a perfect home to live with your family — Kampala Houses connects you with prime properties across Kampala and beyond.">
-        <meta name="twitter:image" content="/img/icon-deal.png">
-
-        <!-- Structured data: Organization with logo. Replace https://yourdomain.com with your real site URL so search engines can show your logo in search results / knowledge panels. -->
-        <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            "name": "Kampala Houses",
-            "url": "https://kampalahousesu.github.io/kampalahouses/",
-            "logo": "https://kampalahousesu.github.io/kampalahouses/img/icon-deal.png"
-        }
-        </script>
+    <link href="img/favicon.ico" rel="icon">
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,7 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Inter:wght@700;800&display=swap" rel="stylesheet">
     
     <!-- Icon Font Stylesheet -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Libraries Stylesheet -->
@@ -73,7 +43,7 @@
 
 
         <!-- Navbar Start -->
-        <div class="container-fluid nav-bar bg-transparent">
+       <div class="container-fluid nav-bar bg-transparent">
             <nav class="navbar navbar-expand-lg bg-white navbar-light py-0 px-4">
                 <a href="index.html" class="navbar-brand d-flex align-items-center text-center">
                     <div class="">
@@ -150,12 +120,56 @@
                                 <div class="modal-footer">
                                     <button type="submit" class="btn btn-primary" id="submitPropertyBtn">Submit Property</button>
                                     <script>
-                                    // Modal form handler: delegate persistence to window.KHProperties
                                     document.addEventListener('DOMContentLoaded', function() {
+                                        const STORAGE_KEY = 'kh_properties';
                                         const form = document.querySelector('#addPropertyModal form');
+                                        const tab1Row = document.querySelector('#tab-1 .row.g-4');
 
-                                        if (!form) return;
+                                        function loadProperties() {
+                                            try {
+                                                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+                                            } catch (e) {
+                                                console.error('Failed to parse properties from localStorage', e);
+                                                return [];
+                                            }
+                                        }
 
+                                        function saveProperties(props) {
+                                            localStorage.setItem(STORAGE_KEY, JSON.stringify(props));
+                                        }
+
+                                        function propertyHTML(p) {
+                                            return `
+                                                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s" data-id="${p.id}">
+                                                    <div class="property-item rounded overflow-hidden">
+                                                        <div class="position-relative overflow-hidden">
+                                                            <a href="#"><img class="img-fluid" src="${p.image}" alt=""></a>
+                                                            <div class="bg-primary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3">${p.type}</div>
+                                                            <div class="bg-white rounded-top text-primary position-absolute start-0 bottom-0 mx-4 pt-1 px-3">${p.type}</div>
+                                                        </div>
+                                                        <div class="p-4 pb-0">
+                                                            <h5 class="text-primary mb-3">${p.price}</h5>
+                                                            <a class="d-block h5 mb-2" href="#">${p.title}</a>
+                                                            <p><i class="fa fa-map-marker-alt text-primary me-2"></i>${p.location}</p>
+                                                            <p>${p.description}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `;
+                                        }
+
+                                        function renderStoredProperties() {
+                                            const props = loadProperties();
+                                            // Insert stored properties at top (so newest show first)
+                                            for (let i = props.length - 1; i >= 0; i--) {
+                                                tab1Row.insertAdjacentHTML('afterbegin', propertyHTML(props[i]));
+                                            }
+                                        }
+
+                                        // Initial render from localStorage
+                                        renderStoredProperties();
+
+                                        // Handle form submit
                                         form.addEventListener('submit', function(e) {
                                             e.preventDefault();
 
@@ -167,10 +181,11 @@
                                             const description = document.getElementById('propertyDescription').value.trim();
 
                                             if (!title || !type || !location || !price || !description) {
-                                                return; // inputs are required in markup already
+                                                // basic validation; inputs are required in markup anyway
+                                                return;
                                             }
 
-                                            const createAndAdd = (imageUrl) => {
+                                            const createAndSave = (imageUrl) => {
                                                 const newProp = {
                                                     id: Date.now(),
                                                     image: imageUrl,
@@ -178,43 +193,15 @@
                                                     type,
                                                     location,
                                                     price,
-                                                    description,
-                                                    status: 'For Sale'
+                                                    description
                                                 };
 
-                                                // Use consolidated API exposed at bottom of page
-                                                if (window.KHProperties && typeof window.KHProperties.add === 'function') {
-                                                    window.KHProperties.add(newProp);
-                                                } else {
-                                                    // Fallback: write directly to localStorage if API not available
-                                                    try {
-                                                        const key = 'kh_properties';
-                                                        const raw = localStorage.getItem(key);
-                                                        const arr = raw ? JSON.parse(raw) : [];
-                                                        arr.push(newProp);
-                                                        localStorage.setItem(key, JSON.stringify(arr));
-                                                        // insert into DOM if possible
-                                                        const tab1Row = document.querySelector('#tab-1 .row.g-4');
-                                                        if (tab1Row) tab1Row.insertAdjacentHTML('afterbegin', `
-                                                            <div class="col-lg-4 col-md-6 wow fadeInUp" data-id="${newProp.id}">
-                                                                <div class="property-item rounded overflow-hidden">
-                                                                    <div class="position-relative overflow-hidden">
-                                                                        <a href="#"><img class="img-fluid" src="${newProp.image}" alt=""></a>
-                                                                        <div class="bg-primary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3">${newProp.status}</div>
-                                                                        <div class="bg-white rounded-top text-primary position-absolute start-0 bottom-0 mx-4 pt-1 px-3">${newProp.type}</div>
-                                                                    </div>
-                                                                    <div class="p-4 pb-0">
-                                                                        <h5 class="text-primary mb-3">${newProp.price}</h5>
-                                                                        <a class="d-block h5 mb-2" href="#">${newProp.title}</a>
-                                                                        <p><i class="fa fa-map-marker-alt text-primary me-2"></i>${newProp.location}</p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        `);
-                                                    } catch (err) {
-                                                        console.error('Failed fallback save', err);
-                                                    }
-                                                }
+                                                const props = loadProperties();
+                                                props.push(newProp);
+                                                saveProperties(props);
+
+                                                // render immediately
+                                                tab1Row.insertAdjacentHTML('afterbegin', propertyHTML(newProp));
 
                                                 // close modal
                                                 const modalEl = document.getElementById('addPropertyModal');
@@ -227,11 +214,12 @@
                                             if (imageInput.files && imageInput.files[0]) {
                                                 const reader = new FileReader();
                                                 reader.onload = function(event) {
-                                                    createAndAdd(event.target.result);
+                                                    createAndSave(event.target.result);
                                                 };
                                                 reader.readAsDataURL(imageInput.files[0]);
                                             } else {
-                                                createAndAdd('img/property-1.png');
+                                                // No image chosen — use a placeholder or empty string
+                                                createAndSave('img/property-placeholder.png');
                                             }
                                         });
                                     });
@@ -258,10 +246,10 @@
                 <div class="col-md-6 animated fadeIn">
                     <div class="owl-carousel header-carousel">
                         <div class="owl-carousel-item">
-                            <img class="img-fluid" src="img/carousel-1.jpg" alt="">
+                            <img class="img-fluid" src="img/icon-deal.png" alt="">
                         </div>
                         <div class="owl-carousel-item">
-                            <img class="img-fluid" src="img/carousel-2.jpg" alt="">
+                            <img class="img-fluid" src="img/1.4B fivebedrooms for sell in najera.png" alt="">
                         </div>
                     </div>
                 </div>
@@ -271,7 +259,7 @@
 
 
         <!-- Search Start -->
-        <div class="container-fluid bg-primary mb-5 wow fadeIn" data-wow-delay="0.1s" style="padding: 35px;">
+       <div class="container-fluid bg-primary mb-5 wow fadeIn" data-wow-delay="0.1s" style="padding: 35px;">
             <div class="container">
                 <div class="row g-2">
                     <div class="col-md-10">
@@ -437,7 +425,7 @@
                 <div class="row g-5 align-items-center">
                     <div class="col-lg-6 wow fadeIn" data-wow-delay="0.1s">
                         <div class="about-img position-relative overflow-hidden p-5 pe-0">
-                            <img class="img-fluid w-100" src="img/about.png">
+                            <img class="img-fluid w-100" src="img/icon-deal.png">
                         </div>
                     </div>
                     <div class="col-lg-6 wow fadeIn" data-wow-delay="0.5s">
@@ -485,14 +473,14 @@
                             <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
                                 <div class="property-item rounded overflow-hidden">
                                     <div class="position-relative overflow-hidden">
-                                        <a href=""><img class="img-fluid" src="img/property-1.png" alt=""></a>
+                                        <a href=""><img class="img-fluid" src="img/property 1 kitekika gayaza rd.jpg" alt=""></a>
                                         <div class="bg-primary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3">For rent</div>
                                         <div class="bg-white rounded-top text-primary position-absolute start-0 bottom-0 mx-4 pt-1 px-3">Appartment</div>
                                     </div>
                                     <div class="p-4 pb-0">
-                                        <h5 class="text-primary mb-3">UGX 700k/month</h5>
+                                        <h5 class="text-primary mb-3">+256 706 707141</h5>
                                         <a class="d-block h5 mb-2" href="">New studio room apartment</a>
-                                        <p><i class="fa fa-map-marker-alt text-primary me-2"></i>Kyanja</p>
+                                        <p><i class="fa fa-map-marker-alt text-primary me-2"></i>Kitetika Gayaza Rd</p>
                                     </div>
                                     <div class="d-flex border-top">
                                         <small class="flex-fill text-center border-end py-2"><i class="fa fa-ruler-combined text-primary me-2"></i>1000 Sqft</small>
@@ -504,14 +492,14 @@
                             <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
                                 <div class="property-item rounded overflow-hidden">
                                     <div class="position-relative overflow-hidden">
-                                        <a href=""><img class="img-fluid" src="img/property-2.png" alt=""></a>
-                                        <div class="bg-primary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3">For Rent</div>
-                                        <div class="bg-white rounded-top text-primary position-absolute start-0 bottom-0 mx-4 pt-1 px-3">Villa</div>
+                                        <a href=""><img class="img-fluid" src="img/1.4B fivebedrooms for sell in najera.png" alt=""></a>
+                                        <div class="bg-primary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3">For Sale</div>
+                                        <div class="bg-white rounded-top text-primary position-absolute start-0 bottom-0 mx-4 pt-1 px-3">Apartment</div>
                                     </div>
                                     <div class="p-4 pb-0">
-                                        <h5 class="text-primary mb-3">UGX400k Per month</h5>
-                                        <a class="d-block h5 mb-2" href="">Golden Urban House For rent</a>
-                                        <p><i class="fa fa-map-marker-alt text-primary me-2"></i>Kisaasi</p>
+                                        <h5 class="text-primary mb-3">UGX 1.5B</h5>
+                                        <a class="d-block h5 mb-2" href="">Golden Urban House For sale +256 706 707141</a>
+                                        <p><i class="fa fa-map-marker-alt text-primary me-2"></i>Najjera</p>
                                     </div>
                                     
                                 </div>
@@ -519,14 +507,14 @@
                             <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.5s">
                                 <div class="property-item rounded overflow-hidden">
                                     <div class="position-relative overflow-hidden">
-                                        <a href=""><img class="img-fluid" src="img/property-3.png" alt=""></a>
+                                        <a href=""><img class="img-fluid" src="img/Kisasa bukooto rd 2M per month 2bdrooms 2 beth rooms .jpg" alt=""></a>
                                         <div class="bg-primary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3">For Rent</div>
                                         <div class="bg-white rounded-top text-primary position-absolute start-0 bottom-0 mx-4 pt-1 px-3">Apartment</div>
                                     </div>
                                     <div class="p-4 pb-0">
                                         <h5 class="text-primary mb-3">UGX 1.8M </h5>
                                         <a class="d-block h5 mb-2" href="">Golden Urban House For rent</a>
-                                        <p><i class="fa fa-map-marker-alt text-primary me-2"></i>Kisaasi town</p>
+                                        <p><i class="fa fa-map-marker-alt text-primary me-2"></i>Kisaasi town +256 706 707141</p>
                                     </div>
                                     <div class="d-flex border-top">
                                         <small class="flex-fill text-center border-end py-2"><i class="fa fa-ruler-combined text-primary me-2"></i>1000 Sqft</small>
@@ -554,33 +542,33 @@
                             <div class="col-lg-4 col-md-6">
                                 <div class="property-item rounded overflow-hidden">
                                     <div class="position-relative overflow-hidden">
-                                        <a href=""><img class="img-fluid" src="img/property-4.png" alt=""></a>
+                                        <a href=""><img class="img-fluid" src="img/kyanja kungu 3brooms 3bithroon 1.5 m per month.jpg" alt=""></a>
                                         <div class="bg-primary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3">For Rent</div>
                                         <div class="bg-white rounded-top text-primary position-absolute start-0 bottom-0 mx-4 pt-1 px-3">Appartment</div>
                                     </div>
                                     <div class="p-4 pb-0">
-                                        <h5 class="text-primary mb-3">UGX 1.7M monthly</h5>
-                                        <a class="d-block h5 mb-2" href="">Golden Urban House For rent</a>
-                                        <p><i class="fa fa-map-marker-alt text-primary me-2"></i>Kisaasi Bukoto RD</p>
+                                        <h5 class="text-primary mb-3">UGX 1.5M monthly</h5>
+                                        <a class="d-block h5 mb-2" href="">Urban House For rent +256 706 707141</a>
+                                        <p><i class="fa fa-map-marker-alt text-primary me-2"></i>Kyanja Kungu</p>
                                     </div>
                                     <div class="d-flex border-top">
                                         <small class="flex-fill text-center border-end py-2"><i class="fa fa-ruler-combined text-primary me-2"></i>1000 Sqft</small>
-                                        <small class="flex-fill text-center border-end py-2"><i class="fa fa-bed text-primary me-2"></i>2 Bedrooms</small>
-                                        <small class="flex-fill text-center py-2"><i class="fa fa-bath text-primary me-2"></i>2 Bathrooms</small>
+                                        <small class="flex-fill text-center border-end py-2"><i class="fa fa-bed text-primary me-2"></i>3 Bedrooms</small>
+                                        <small class="flex-fill text-center py-2"><i class="fa fa-bath text-primary me-2"></i>3 Bathrooms</small>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-lg-4 col-md-6">
                                 <div class="property-item rounded overflow-hidden">
                                     <div class="position-relative overflow-hidden">
-                                        <a href=""><img class="img-fluid" src="img/property-5.png" alt=""></a>
+                                        <a href=""><img class="img-fluid" src="img/property 1 kitekika gayaza rd.jpg" alt=""></a>
                                         <div class="bg-primary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3">For Rent</div>
                                         <div class="bg-white rounded-top text-primary position-absolute start-0 bottom-0 mx-4 pt-1 px-3">Apartment</div>
                                     </div>
                                     <div class="p-4 pb-0">
-                                        <h5 class="text-primary mb-3">UGX.800k Per month</h5>
-                                        <a class="d-block h5 mb-2" href="">Golden Urban House For rent</a>
-                                        <p><i class="fa fa-map-marker-alt text-primary me-2"></i>Najjera Buwatte</p>
+                                        <h5 class="text-primary mb-3">+256 706 707141</h5>
+                                        <a class="d-block h5 mb-2" href="">Golden Urban House </a>
+                                        <p><i class="fa fa-map-marker-alt text-primary me-2"></i>Kitetika Gayaza RD</p>
                                     </div>
                                     <div class="d-flex border-top">
                                         <small class="flex-fill text-center border-end py-2"><i class="fa fa-ruler-combined text-primary me-2"></i>1000 Sqft</small>
@@ -732,18 +720,18 @@
                             <div class="col-lg-4 col-md-6">
                                 <div class="property-item rounded overflow-hidden">
                                     <div class="position-relative overflow-hidden">
-                                        <a href=""><img class="img-fluid" src="img/property-7.png" alt=""></a>
+                                        <a href=""><img class="img-fluid" src="img/Two bed rooms with maids room kisasi kulambilo 1.6 per month.jpg" alt=""></a>
                                         <div class="bg-primary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3">For Rent</div>
                                         <div class="bg-white rounded-top text-primary position-absolute start-0 bottom-0 mx-4 pt-1 px-3">Building</div>
                                     </div>
                                     <div class="p-4 pb-0">
-                                        <h5 class="text-primary mb-3">UGX.456</h5>
+                                        <h5 class="text-primary mb-3">UGX.1.6M</h5>
                                         <a class="d-block h5 mb-2" href="">Golden Urban House For Sell</a>
-                                        <p><i class="fa fa-map-marker-alt text-primary me-2"></i>Kikaaya</p>
+                                        <p><i class="fa fa-map-marker-alt text-primary me-2"></i>kulambilo</p>
                                     </div>
                                     <div class="d-flex border-top">
                                         <small class="flex-fill text-center border-end py-2"><i class="fa fa-ruler-combined text-primary me-2"></i>1000 Sqft</small>
-                                        <small class="flex-fill text-center border-end py-2"><i class="fa fa-bed text-primary me-2"></i>3 Bed</small>
+                                        <small class="flex-fill text-center border-end py-2"><i class="fa fa-bed text-primary me-2"></i>Miad's room</small>
                                         <small class="flex-fill text-center py-2"><i class="fa fa-bath text-primary me-2"></i>2 Bath</small>
                                     </div>
                                 </div>
@@ -811,7 +799,7 @@
                                     <h1 class="mb-3">Contact With Our Certified Agent</h1>
                                     <p>Let’s turn ideas into action—start the conversation.</p>
                                 </div>
-                                <a href="tel:+256706707141" class="btn btn-primary py-3 px-4 me-2"><i class="fa fa-phone-alt me-2"></i>Make A Call</a>
+                                <a href="" class="btn btn-primary py-3 px-4 me-2"><i class="fa fa-phone-alt me-2"></i>Make A Call</a>
                                 <a href="tel:+256706707141" class="btn btn-primary py-3 px-4 me-2"><i class="fa fa-phone-alt me-2"></i>Make A Call</a>
                             </div>
                         </div>
@@ -821,17 +809,8 @@
         </div>
         <!-- Call to Action End -->
 
-
-        <!-- Team Start -->
-        >
-
-
-        <!-- Testimonial Start -->
-        
-        
-
         <!-- Footer Start -->
-        <div class="container-fluid bg-dark text-white-50 footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
+       <div class="container-fluid bg-dark text-white-50 footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
             <div class="container py-5">
                 <div class="row g-5">
                     <div class="col-lg-3 col-md-6">
@@ -842,7 +821,7 @@
                         <div class="d-flex pt-2">
                             <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-twitter"></i></a>
                             <a class="btn btn-outline-light btn-social" href="https://www.facebook.com/mukisaisa00" target="_blank"><i class="fab fa-facebook-f"></i></a>
-                            <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-youtube"></i></a>
+                            <a class="btn btn-outline-light btn-social" href="https://www.youtube.com/@kampalahouses"><i class="fab fa-youtube"></i></a>
                             <a class="btn btn-outline-light btn-social" href="https://vm.tiktok.com/ZMALj9aoR/" target="_blank"><i class="fa-brands fa-tiktok"></i></a>
                         </div>
                     </div>
@@ -882,7 +861,7 @@
                         <p>Subscribe to our newsletter for the latest property listings, market updates, and exclusive offers from Kampala Houses. Stay informed and find your dream home or investment opportunity in Uganda!</p>
                         <div class="position-relative mx-auto" style="max-width: 400px;">
                             <input class="form-control bg-transparent w-100 py-3 ps-4 pe-5" type="text" placeholder="Your email">
-                            <a href="signup.html" class="btn btn-primary py-2 position-absolute top-0 end-0 mt-2 me-2">Sign Up</a>
+                            <a href="index contact.html" class="btn btn-primary py-2 position-absolute top-0 end-0 mt-2 me-2">Sign Up</a>
                         </div>
                     </div>
                 </div>
@@ -911,8 +890,8 @@
         <!-- Footer End -->
 
 
-        <!-- Back to Top -->
-        <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+       <!-- Back to Top -->
+        <a href="index.html" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
     </div>
 
     <!-- JavaScript Libraries -->
@@ -926,88 +905,44 @@
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
 
-        <!-- Consolidated property storage and rendering script -->
-        <script>
-        (function(){
-            const STORAGE_KEY = 'kh_properties'; // keep existing key used by modal code
+    <!-- Plain HTML/JS example -->
+<form id="addForm">
+  <input id="name" placeholder="Property name" />
+  <button type="submit">Add</button>
+</form>
+<ul id="list"></ul>
 
-            // Find the container where tab-1 properties live
-            const tab1Row = document.querySelector('#tab-1 .row.g-4');
+<script>
+const STORAGE_KEY = 'my_properties';
+const listEl = document.getElementById('list');
 
-            function safeParse(raw) {
-                try { return JSON.parse(raw); } catch (e) { return null; }
-            }
+function load() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  return saved ? JSON.parse(saved) : [];
+}
 
-            function loadProperties() {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                const parsed = safeParse(raw);
-                return Array.isArray(parsed) ? parsed : [];
-            }
+function save(props) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(props));
+}
 
-            function saveProperties(props) {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(props));
-            }
+function render() {
+  const props = load();
+  listEl.innerHTML = props.map(p => `<li>${p.title}</li>`).join('');
+}
 
-            function propertyHTML(p) {
-                // use a small, non-intrusive HTML fragment that matches site's cards
-                const img = p.image || 'img/property-1.png';
-                const typeLabel = (p.type || 'Property').replace(/_/g, ' ');
-                return `
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s" data-id="${p.id}">
-                            <div class="property-item rounded overflow-hidden">
-                                    <div class="position-relative overflow-hidden">
-                                            <a href="#"><img class="img-fluid" src="${img}" alt=""></a>
-                                            <div class="bg-primary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3">${p.status||'For Sale'}</div>
-                                            <div class="bg-white rounded-top text-primary position-absolute start-0 bottom-0 mx-4 pt-1 px-3">${typeLabel}</div>
-                                    </div>
-                                    <div class="p-4 pb-0">
-                                            <h5 class="text-primary mb-3">${p.price||''}</h5>
-                                            <a class="d-block h5 mb-2" href="#">${p.title||''}</a>
-                                            <p><i class="fa fa-map-marker-alt text-primary me-2"></i>${p.location||''}</p>
-                                            <p>${p.description||''}</p>
-                                    </div>
-                            </div>
-                    </div>
-                `;
-            }
+document.getElementById('addForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = document.getElementById('name').value.trim();
+  if (!name) return;
+  const props = load();
+  props.push({ id: Date.now(), title: name });
+  save(props);
+  render();
+  document.getElementById('name').value = '';
+});
 
-            function renderStoredProperties() {
-                if (!tab1Row) return;
-                const props = loadProperties();
-                // clear previously injected stored properties to avoid duplicates
-                // We'll remove items with data-id attributes matching stored ones, then add from storage
-                const existingIds = new Set(props.map(p => String(p.id)));
-                tab1Row.querySelectorAll('[data-id]').forEach(el => {
-                    const id = el.getAttribute('data-id');
-                    if (existingIds.has(id)) el.remove();
-                });
-
-                // Insert stored properties so newest appear first
-                for (let i = props.length - 1; i >= 0; i--) {
-                    tab1Row.insertAdjacentHTML('afterbegin', propertyHTML(props[i]));
-                }
-            }
-
-            // Expose helper for modal script to call when adding
-            window.KHProperties = {
-                load: loadProperties,
-                save: saveProperties,
-                render: renderStoredProperties,
-                add: function(prop) {
-                    const props = loadProperties();
-                    props.push(prop);
-                    saveProperties(props);
-                    // render only the new one at top
-                    if (tab1Row) tab1Row.insertAdjacentHTML('afterbegin', propertyHTML(prop));
-                }
-            };
-
-            // Initial render
-            document.addEventListener('DOMContentLoaded', function(){
-                renderStoredProperties();
-            });
-        })();
-        </script>
+render();
+</script>
 </body>
 
 
